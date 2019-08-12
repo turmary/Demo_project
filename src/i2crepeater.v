@@ -40,7 +40,7 @@ module i2crepeater
 	reg [6:0] State;
 
 	// Just pass the clock through from master to slave.
-	assign slave_scl = master_scl? 1'bz: 0;
+	assign slave_scl = scl_new? 1'bz: 0;
 
 
 	// Assignment of I/O.

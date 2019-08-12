@@ -151,5 +151,5 @@ set_property PACKAGE_PIN L1  [get_ports {o_dac_data}]
 set_property PACKAGE_PIN F3 [get_ports o_hdmi_scl]
 set_property PACKAGE_PIN F2 [get_ports x_hdmi_sda]
 
-set_property SLEW FAST [get_ports {gport_dx[6]}]
-set_property SLEW FAST [get_ports {gport_dx[5]}]
+# set_property SLEW FAST [get_ports {gport_dx[6]}]
+# set_property SLEW FAST [get_ports {gport_dx[5]}]
