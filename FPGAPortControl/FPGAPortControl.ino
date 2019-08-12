@@ -103,6 +103,10 @@
   * 0x0C  - GPD_OE    port D output enable, 1 for output, 0 for input
   * 0x0D  - GPD_ODATA port D output data
   * 0x0E  - GPD_IDATA port D input  data
+  * 0x0F  - GPD_ALT   port D alternate function control,
+            bit 0x3F  reserved
+            bit 0x40  I2C_SDA alternate, 1 for I2C_SDA, 0 for GPORT_D[6]
+            bit 0x80  I2C_SCL alternate, 1 for I2C_SCL, 0 for GPORT_D[7]
 
   * 0x10  - GPE_OE    port E output enable, 1 for output, 0 for input
   * 0x11  - GPE_ODATA port E output data
@@ -170,6 +174,10 @@ enum {
   GPD_OE = 0x0C,
   GPD_ODATA,
   GPD_IDATA,
+  #define GPD_ALT_I2C_SDA   0x40
+  #define GPD_ALT_I2C_SCL   0x80
+  #define GPD_ALT_I2C_MASK (GPD_ALT_I2C_SDA | GPD_ALT_I2C_SCL)
+  GPD_ALT,
 
   GPE_OE = 0x10,
   GPE_ODATA,
@@ -317,6 +325,9 @@ void setup() {
   /* UART alternate pin */
   regWrite(GPC_ALT, GPC_ALT_UART_MASK);
 
+  /* I2C alternate pin */
+  regWrite(GPD_ALT, GPD_ALT_I2C_MASK);
+
   regWrite(GPC_OE, 0xFF);
   regWrite(GPD_OE, 0x01);
 
@@ -454,7 +465,7 @@ int uart_chk(void) {
     stat = regRead(UART_STAT);
 
     Serial.print((const char)r);
-    delay(1);
+    Serial.flush();
 
     for (i = 10000; i >= 0; i--) {
       if (regRead(UART_STAT) & UART_STAT_RX_DV) {

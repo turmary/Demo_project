@@ -31,6 +31,9 @@ set_property IOSTANDARD LVCMOS33 [get_ports {o_dac_clk}]
 set_property IOSTANDARD LVCMOS33 [get_ports {o_dac_sync_n}]
 set_property IOSTANDARD LVCMOS33 [get_ports {o_dac_data}]
 
+set_property IOSTANDARD LVCMOS33 [get_ports o_hdmi_scl]
+set_property IOSTANDARD LVCMOS33 [get_ports x_hdmi_sda]
+
 
 # FPGA_IO0 - FPGA_IO7
 set_property PACKAGE_PIN N14 [get_ports {gport_a[0]}]
@@ -144,3 +147,9 @@ set_property PACKAGE_PIN M1  [get_ports {o_dac_clk}]
 set_property PACKAGE_PIN N1  [get_ports {o_dac_sync_n}]
 set_property PACKAGE_PIN L1  [get_ports {o_dac_data}]
 
+# HDMI I2C
+set_property PACKAGE_PIN F3 [get_ports o_hdmi_scl]
+set_property PACKAGE_PIN F2 [get_ports x_hdmi_sda]
+
+set_property SLEW FAST [get_ports {gport_dx[6]}]
+set_property SLEW FAST [get_ports {gport_dx[5]}]

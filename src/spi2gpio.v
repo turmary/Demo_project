@@ -53,7 +53,11 @@ module spi2gpio (
 	// dac7311
 	output o_dac_clk,
 	output o_dac_sync_n,
-	output o_dac_data
+	output o_dac_data,
+
+	// hdmi i2c
+	output o_hdmi_scl,
+	inout  x_hdmi_sda
 );
 	/* global clock */
 	reg clk;
@@ -323,9 +327,13 @@ module spi2gpio (
 /* ===========================================================================*/
 /* GPIO D */
 /* ===========================================================================*/
+	reg  [7:0] gpd_alt;
 	reg  [7:0] gpd_oe;
 	reg  [7:0] gpd_odata;
 	wire [7:0] gpd_idata;
+
+	// hdmi i2c
+	wire master_in;
 
 	assign gpd_idata = gport_d;
 
@@ -335,8 +343,9 @@ module spi2gpio (
 	assign gport_d[3] = gpd_oe[3]? gpd_odata[3]: 1'bz;
 	assign gport_d[4] = gpd_oe[4]? gpd_odata[4]: 1'bz;
 	assign gport_d[5] = gpd_oe[5]? gpd_odata[5]: 1'bz;
-	assign gport_d[6] = gpd_oe[6]? gpd_odata[6]: 1'bz;
-	assign gport_d[7] = gpd_oe[7]? gpd_odata[7]: 1'bz;
+	assign gport_d[6] = gpd_alt[6]? (master_in? (x_hdmi_sda? 1'bz: 0): 1'bz)
+	                              : (gpd_oe[6]? gpd_odata[6]: 1'bz);
+	assign gport_d[7] = (~gpd_alt[7] & gpd_oe[7])? gpd_odata[7]: 1'bz;
 
 /* ===========================================================================*/
 /* GPIO E */
@@ -490,6 +499,23 @@ module spi2gpio (
 	);
 
 /* ===========================================================================*/
+/* HDMI I2C */
+/* ===========================================================================*/
+	wire master_scl = gpd_idata[7];
+	wire i_master_sda = gpd_idata[6];
+	assign x_hdmi_sda = master_in? 1'bz: (i_master_sda? 1'bz: 0);
+
+	i2crepeater i2crepeater_unit(
+		.system_clk       (clk),
+		.reset            (~rst_n),
+		.master_scl       (master_scl),
+		.i_master_sda     (i_master_sda),
+		.slave_scl        (o_hdmi_scl),
+		.i_slave_sda      (x_hdmi_sda),
+		.sda_direction_tap(master_in)
+	);
+
+/* ===========================================================================*/
 /* SPI REGISTER WRITE */
 /* ===========================================================================*/
 	/*
@@ -529,6 +555,7 @@ module spi2gpio (
 
 			gpd_oe = 8'h00;
 			gpd_odata = 0;
+			gpd_alt = 8'h00;
 
 			gpe_oe = 8'h00;
 			gpe_odata = 0;
@@ -560,6 +587,7 @@ module spi2gpio (
 
 			'h0C: gpd_oe    = spi_wdata;
 			'h0D: gpd_odata = spi_wdata;
+			'h0F: gpd_alt   = spi_wdata;
 
 			'h10: gpe_oe    = spi_wdata;
 			'h11: gpe_odata = spi_wdata;
@@ -612,6 +640,7 @@ module spi2gpio (
 			'h0C: spi_snd = gpd_oe;
 			'h0D: spi_snd = gpd_odata;
 			'h0E: spi_snd = gpd_idata;
+			'h0F: spi_snd = gpd_alt;
 
 			'h10: spi_snd = gpe_oe;
 			'h11: spi_snd = gpe_odata;
